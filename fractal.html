@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>(∞) Dive, Working Version</title>
+		<meta charset="utf-8"/>
+		<link rel="shortcut icon" href="diveFavicon.png"/>
+		<link rel="logo" type="image/svg" href="http://dive.makopool.com/logo.svg"/>
+		<style>
+			body {color:#e7e7e7; background:#000000}
+			
+			#centerLogo {
+				position: fixed;
+				top:50%;
+				left:50%;
+				margin-left: -64px;
+				margin-top: -64px;
+				-webkit-transition-property: opacity;
+				-webkit-transition-duration: 0.5s;
+				-moz-transition-property: opacity;
+				-moz-transition-duration: 0.5s;
+				-ms-transition-property: opacity;
+				-ms-transition-duration: 0.5s;
+				-o-transition-property: opacity;
+				-o-transition-duration: 0.5s;
+				transition-property: opacity;
+				transition-duration: 0.5s;
+				opacity:0;
+			}
+			
+			.HUD {
+				pointer-events: none;
+			}
+			
+			.corner {
+				opacity: 0;
+				-webkit-transition: all 0.6s ease-out;
+				-moz-transition: all 0.6s ease-out;
+				-ms-transition: all 0.6s ease-out;
+				-o-transition: all 0.6s ease-out;
+				transition: all 0.6s ease-out;
+			}
+			
+			.flipH {
+				-webkit-transform: scaleX(-1);
+				-moz-transform: scaleX(-1);
+				-ms-transform: scaleX(-1);
+				-o-transform: scaleX(-1);
+				transform: scaleX(-1);
+			}
+			.flipV {
+				-webkit-transform: scaleY(-1);
+				-moz-transform: scaleY(-1);
+				-ms-transform: scaleY(-1);
+				-o-transform: scaleY(-1);
+				transform: scaleY(-1);
+			}
+			.flipHV {
+				-webkit-transform: scaleX(-1) scaleY(-1);
+				-moz-transform: scaleX(-1) scaleY(-1);
+				-ms-transform: scaleX(-1) scaleY(-1);
+				-o-transform: scaleX(-1) scaleY(-1);
+				transform: scaleX(-1) scaleY(-1);
+			}
+			
+			#cornerul {position: absolute; top: -0px; left: -0px;}
+			#cornerur {position: absolute; top: -0px; right: -0px;}
+			#cornerbl {position: absolute; bottom: -0px; left: -0px;}
+			#cornerbr {position: absolute; bottom: -0px; right: -0px;}
+			
+			#mainOverlay {
+				position: fixed;
+				top:0px;
+				bottom:0px;
+				right:0px;
+				left:0px;
+			}
+			
+			#viewDiv {
+				position: fixed;
+				left: 50%;
+				top: 50%;
+				width:512px; height:512px;
+				margin-left: -256px;
+				margin-top: -256px;
+			}
+			#view {
+				position: absolute;
+				left:0; top:0;
+				width: 512px; height: 512px;
+				-webkit-transition: all 0.35s cubic-bezier(0.73, 4, 0.73, -1.7);
+				-moz-transition: all 0.35s cubic-bezier(0.73, 4, 0.73, -1.7);
+				-ms-transition: all 0.35s cubic-bezier(0.73, 4, 0.73, -1.7);
+				-o-transition: all 0.35s cubic-bezier(0.73, 4, 0.73, -1.7);
+				transition: all 0.35s cubic-bezier(0.73, 4, 0.73, -1.7);
+				opacity: 0;
+			}
+			
+			#arcHolder {
+				position: absolute;
+				left: 12%;
+				top: 23px;
+				bottom: 23px;
+				right: 0px;
+				color: #fff;
+				opacity: 0;
+				margin-left: -8px;	
+				-webkit-transition: all 2.4s ease-in-out;
+				-moz-transition: all 2.4s ease-in-out;
+				-ms-transition: all 2.4s ease-in-out;
+				-o-transition: all 2.4s ease-in-out;
+				transition: all 2.4s ease-in-out;
+			}
+			
+			#arcHolder.arcHolderOut {
+				opacity: 0;
+				margin-left: 0px;
+				-webkit-transition: all 2.4s ease-in-out;
+				-moz-transition: all 2.4s ease-in-out;
+				-ms-transition: all 2.4s ease-in-out;
+				-o-transition: all 2.4s ease-in-out;
+				transition: all 2.4s ease-in-out;
+			}
+			
+			#arcHolder.arcHolderIn {
+				opacity: 1;
+				margin-left: 0px;
+				-webkit-transition: all 0.18s ease-in-out;
+				-moz-transition: all 0.18s ease-in-out;
+				-ms-transition: all 0.18s ease-in-out;
+				-o-transition: all 0.18s ease-in-out;
+				transition: all 0.18s ease-in-out;
+			}
+			
+			#details {
+				position: fixed;
+				left: 0px;
+				bottom: 0px;
+				opacity: 0;
+				padding-left: 11px;
+				padding-bottom: 11px;
+				padding-right: 29px;
+				padding-top: 29px;
+				-webkit-transition: all 3s ease-in-out;
+				-moz-transition: all 3s ease-in-out;
+				-ms-transition: all 3s ease-in-out;
+				-o-transition: all 3s ease-in-out;
+				transition: all 3s ease-in-out;
+			}
+			#details:hover {
+				-webkit-transition: all 0.2s ease-in-out;
+				-moz-transition: all 0.2s ease-in-out;
+				-ms-transition: all 0.2s ease-in-out;
+				-o-transition: all 0.2s ease-in-out;
+				transition: all 0.2s ease-in-out;
+				opacity: 0.8;
+			}
+			#details.noted :not(:hover) {
+				opacity: 0.2;
+			}
+			
+			#aboutMeImg {
+				position: fixed;
+				left: 0px;
+				bottom: 0px;
+				opacity: 0;
+				padding-left: 11px;
+				padding-bottom: 11px;
+				padding-right: 4px;
+				padding-top: 4px;
+			}
+		</style>
+		<!-- <script src="//ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js"></script> -->
+		<!-- a reminder of where these links be at;  https://developers.google.com/speed/libraries/devguide#jquery -->
+		<!-- <script language="javascript" src="raphael.js"></script>
+		<script language="javascript" src="radial.js"></script>
+		<script language="javascript" src="blinky.js"></script> -->
+		<script language="javascript" src="OutputArc.js"></script>
+		<script language="javascript" src="fractalDrawing.js"></script>
+		<script id="fractalRenderWorker" type="text/javascript-worker" src="fractalRenderWorker.js"></script>
+		<script language="javascript" src="FractalDepths.js"></script>
+		<script language="javascript" src="fractal.js" ></script>
+	</head>
+	<body>
+		<a href="http://aboutmako.makopool.com/" id="details" alt="details indicator"> <img src="smallCircle.png"/> </a>
+		<div id="viewDiv">
+			<canvas id="view" width="512" height="512"></canvas>
+			<img id="cornerul" src="innerCornerul.png" class="corner HUD" />
+			<img id="cornerur" src="innerCornerul.png" class="corner HUD flipH" />
+			<img id="cornerbl" src="innerCornerul.png" class="corner HUD flipV" />
+			<img id="cornerbr" src="innerCornerul.png" class="corner HUD flipHV" />
+		</div>
+		<img id="centerLogo" src="diveLogo.png" class="HUD" />
+		<!-- <div id="mainOverlay" class="HUD"></div> -->
+		<div id="arcHolder" class="HUD arcHolderIn"></div>
+	</body>
+</html>
