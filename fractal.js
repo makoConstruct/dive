@@ -192,8 +192,7 @@ window.onload = function(){
 	cancon = canvas.getContext('2d');
 	arc = new OutputArc(document.getElementById('arcHolder'), 0.28);
 	document.getElementById('centerLogo').style.opacity = 0.19;
-	say('welcome to Dive');
-	say('current funding:0$');
+	say('current funding:0$/h');
 	say('generating overview..');
 	document.getElementById('details').addEventListener(
 		'mouseover',
@@ -216,7 +215,7 @@ window.onload = function(){
 	zoomer = new Zoomer(canvas, fractalDiver);
 	var transitionVisibility = function(){
 		say('overview drawn');
-		say('welcome to Dive', function(){ //the function argument gets called when this is said; which could be well after it's posted, the arc has a maximum cascade speed such that if things are said faster than that, it queues them.
+		say('ready to dive.', function(){ //the function argument gets called when this is said; which could be well after it's posted, the arc has a maximum cascade speed such that if things are said faster than that, it queues them.
 			timeSequence([
 				function(){
 					// document.getElementById('centerLogo').style.opacity = 1;
