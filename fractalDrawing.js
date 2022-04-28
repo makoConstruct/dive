@@ -13,14 +13,19 @@ function pixel(x,y,  shade){ //depends idat
 	dat[++pixp] = 255; //because this one is alpha.
 }
 
+
 function mongle(previous){
-	return ((2148135791*(previous) + 0xB8D29D9A)%0xFFFFFFFF);
+	// we cannot return home
+	// return ((2148135791*previous)&0xFFFFFFFF + 0xB8D29D9A)&0xFFFFFFFF;
+	return ((2148135791*previous)&0x7FFFFFFF + 0xB8D29D9A)&0x7FFFFFFF;
 }
+// invexp32 = 1/0xFFFFFFFF;
+//the home that we cannot return to: the seeds never used to go negative.
+// function mongleRange(previous){return mongle(previous)*invexp32;}
+invexp32i = 1/0x7FFFFFFF;
+function mongleRange(previous){return mongle(previous)*invexp32i;}
 
-invexp32 = 1/0xFFFFFFFF;
-function mongleRange(previous){return mongle(previous)*invexp32;}
-
-function skewDegree(fraction, skew){
+function skewDegree(fraction, skew){ //basically this is a very crude way of biasing it towards lower values.
 	if(fraction < (skew - 1)/(skew -1/skew)){
 		return fraction/skew;
 	}else{
@@ -28,166 +33,7 @@ function skewDegree(fraction, skew){
 	}
 }
 
-function fractalRecurseOldWhole(x,y, shade,hash, elevation){ //relies on idat
-	var zoneSpan  =  ((shade >= 128)? (255 - shade) : shade)*shadeStray;
-	var seed = mongle(hash);
-	var od = Math.round((zoneSpan*2)*mongleRange(seed) - zoneSpan);
-	var orbit1 = shade - od;
-	var orbit2 = shade + od;
-	var or1dZone = Math.min(orbit1, 255 - orbit1)*shadeStray;
-	var or2dZone = Math.min(orbit2, 255 - orbit2)*shadeStray;
-	var or1d = Math.round((or1dZone*2)*mongleRange(++seed) - or1dZone);
-	var or2d = Math.round((or2dZone*2)*mongleRange(++seed) - or2dZone);
-	var shade1 = (orbit1 + or1d);
-	var shade2 = (orbit1 - or1d);
-	var shade3 = (orbit2 + or2d);
-	var shade4 = (orbit2 - or2d);
-	var nextel = elevation-1;
-	if(nextel == 0){
-		var pixp = 4*idat.width*y + 4*x;
-		var dat = idat.data;
-		dat[pixp] = shade1;
-		dat[++pixp] = shade1;
-		dat[++pixp] = shade1;
-		dat[++pixp] = 255;
-		dat[++pixp] = shade2;
-		dat[++pixp] = shade2;
-		dat[++pixp] = shade2;
-		dat[++pixp] = 255;
-		pixp += 4*idat.width -7;
-		dat[pixp] = shade3;
-		dat[++pixp] = shade3;
-		dat[++pixp] = shade3;
-		dat[++pixp] = 255;
-		dat[++pixp] = shade4;
-		dat[++pixp] = shade4;
-		dat[++pixp] = shade4;
-		dat[++pixp] = 255;
-	}else{
-		var scale = Math.pow(2, nextel);
-		arguments.callee(x,       y,       shade1, ++seed,  nextel); //(In other words; this_function(...) )
-		arguments.callee(x+scale, y,       shade2, ++seed,  nextel);
-		arguments.callee(x,       y+scale, shade3, ++seed,  nextel);
-		arguments.callee(x+scale, y+scale, shade4, ++seed,  nextel);
-	}
-}
-
-var fractalRecurseOldWholeExtWorkhorseShade1;
-var fractalRecurseOldWholeExtWorkhorseShade2;
-var fractalRecurseOldWholeExtWorkhorseShade3;
-var fractalRecurseOldWholeExtWorkhorseShade4;
-var fractalRecurseOldWholeExtWorkhorseSeed;
-function fractalRecurseOldWholeExtWorkhorse(shade, hash){
-	var zoneSpan  =  ((shade >= 128)? (255 - shade) : shade)*shadeStray;
-	var seed = mongle(hash);
-	var od = Math.round((zoneSpan*2)*mongleRange(seed) - zoneSpan);
-	var orbit1 = shade - od;
-	var orbit2 = shade + od;
-	var or1dZone = Math.min(orbit1, 255 - orbit1)*shadeStray;
-	var or2dZone = Math.min(orbit2, 255 - orbit2)*shadeStray;
-	var or1d = Math.round((or1dZone*2)*mongleRange(++seed) - or1dZone);
-	var or2d = Math.round((or2dZone*2)*mongleRange(++seed) - or2dZone);
-	fractalRecurseOldWholeExtWorkhorseShade1 = (orbit1 + or1d);
-	fractalRecurseOldWholeExtWorkhorseShade2 = (orbit1 - or1d);
-	fractalRecurseOldWholeExtWorkhorseShade3 = (orbit2 + or2d);
-	fractalRecurseOldWholeExtWorkhorseShade4 = (orbit2 - or2d);
-	fractalRecurseOldWholeExtWorkhorseSeed = seed;
-}
-function fractalRecurseOldWholeExt(x,y, shade,hash, elevation){ //relies on idat
-	fractalRecurseOldWholeExtWorkhorse(shade, hash);
-	var s1 = fractalRecurseOldWholeExtWorkhorseShade1;
-	var s2 = fractalRecurseOldWholeExtWorkhorseShade2;
-	var s3 = fractalRecurseOldWholeExtWorkhorseShade3;
-	var s4 = fractalRecurseOldWholeExtWorkhorseShade4;
-	var seed = fractalRecurseOldWholeExtWorkhorseSeed;
-	var nextel = elevation-1;
-	if(nextel == 0){
-		var pixp = 4*idat.width*y + 4*x;
-		var dat = idat.data;
-		dat[pixp] = s1;
-		dat[++pixp] = s1;
-		dat[++pixp] = s1;
-		dat[++pixp] = 255;
-		dat[++pixp] = s2;
-		dat[++pixp] = s2;
-		dat[++pixp] = s2;
-		dat[++pixp] = 255;
-		pixp += 4*idat.width -7;
-		dat[pixp] = s3;
-		dat[++pixp] = s3;
-		dat[++pixp] = s3;
-		dat[++pixp] = 255;
-		dat[++pixp] = s4;
-		dat[++pixp] = s4;
-		dat[++pixp] = s4;
-		dat[++pixp] = 255;
-	}else{
-		var scale = Math.pow(2, nextel);
-		arguments.callee(x,       y,       s1, ++seed,  nextel); //(In other words; this_function(...) )
-		arguments.callee(x+scale, y,       s2, ++seed,  nextel);
-		arguments.callee(x,       y+scale, s3, ++seed,  nextel);
-		arguments.callee(x+scale, y+scale, s4, ++seed,  nextel);
-	}
-}
-
-var fractalRecurseOldWholeExtWorkhorseCAShades = new Uint8ClampedArray(4);
-var fractalRecurseOldWholeExtWorkhorseCASeed;
-function fractalRecurseOldWholeExtWorkhorseCA(shade, hash){
-	var zoneSpan  =  shadeStray*((shade >= 128)? (255 - shade) : shade);
-	var seed = mongle(hash);
-	var od = Math.round((zoneSpan*2)*mongleRange(seed) - zoneSpan);
-	var orbit1 = -od + shade;
-	var orbit2 =  od + shade;
-	var or1dZone = Math.min(orbit1, 255 - orbit1)*shadeStray;
-	var or2dZone = Math.min(orbit2, 255 - orbit2)*shadeStray;
-	var or1d = Math.round((or1dZone*2)*mongleRange(++seed) - or1dZone);
-	var or2d = Math.round((or2dZone*2)*mongleRange(++seed) - or2dZone);
-	fractalRecurseOldWholeExtWorkhorseCAShades[0] = (orbit1 + or1d);
-	fractalRecurseOldWholeExtWorkhorseCAShades[1] = (orbit1 - or1d);
-	fractalRecurseOldWholeExtWorkhorseCAShades[2] = (orbit2 + or2d);
-	fractalRecurseOldWholeExtWorkhorseCAShades[3] = (orbit2 - or2d);
-	fractalRecurseOldWholeExtWorkhorseCASeed = seed;
-}
-function fractalRecurseOldWholeExtCA(x,y, shade,hash, elevation){ //relies on idat
-	if(hold.length < 12) hold.push(shade);
-	fractalRecurseOldWholeExtWorkhorseCA(shade, hash);
-	var seed = fractalRecurseOldWholeExtWorkhorseCASeed;
-	var heldShades = new Uint8ClampedArray(4);
-	heldShades[0] = fractalRecurseOldWholeExtWorkhorseCAShades[0];
-	heldShades[1] = fractalRecurseOldWholeExtWorkhorseCAShades[1];
-	heldShades[2] = fractalRecurseOldWholeExtWorkhorseCAShades[2];
-	heldShades[3] = fractalRecurseOldWholeExtWorkhorseCAShades[3];
-	var nextel = elevation-1;
-	if(nextel === 0){
-		var pixp = 4*idat.width*y + 4*x;
-		var dat = idat.data;
-		dat[pixp] = heldShades[0];
-		dat[++pixp] = heldShades[0];
-		dat[++pixp] = heldShades[0];
-		dat[++pixp] = 255;
-		dat[++pixp] = heldShades[1];
-		dat[++pixp] = heldShades[1];
-		dat[++pixp] = heldShades[1];
-		dat[++pixp] = 255;
-		pixp += 4*idat.width -7;
-		dat[pixp] = heldShades[2];
-		dat[++pixp] = heldShades[2];
-		dat[++pixp] = heldShades[2];
-		dat[++pixp] = 255;
-		dat[++pixp] = heldShades[3];
-		dat[++pixp] = heldShades[3];
-		dat[++pixp] = heldShades[3];
-		dat[++pixp] = 255;
-	}else{
-		var scale = Math.pow(2, nextel);
-		arguments.callee(x,       y,       heldShades[0], ++seed,  nextel);
-		arguments.callee(x+scale, y,       heldShades[1], ++seed,  nextel);
-		arguments.callee(x,       y+scale, heldShades[2], ++seed,  nextel);
-		arguments.callee(x+scale, y+scale, heldShades[3], ++seed,  nextel);
-	}
-}
-
-
+//outputs:
 var shadeUL;
 var hashUL;
 var shadeUR;
@@ -196,6 +42,7 @@ var shadeBL;
 var hashBL;
 var shadeBR;
 var hashBR;
+//tunings:
 var mutagenUpper = 1;
 var mutagenLower = 0.3;
 var mutagenDiff = mutagenUpper - mutagenLower;
@@ -255,7 +102,7 @@ function fractalRecurse(x,y,shade,hash, elevation){ //relies on idat
 	if(nextel == 0){
 		var pixp = 4*idat.width*y + 4*x;
 		var dat = idat.data;
-		dat[pixp] = sUL;
+		dat[  pixp] = sUL;
 		dat[++pixp] = sUL;
 		dat[++pixp] = sUL;
 		dat[++pixp] = 255;
@@ -264,7 +111,7 @@ function fractalRecurse(x,y,shade,hash, elevation){ //relies on idat
 		dat[++pixp] = sUR;
 		dat[++pixp] = 255;
 		pixp += 4*idat.width -7;
-		dat[pixp] = sBL;
+		dat[  pixp] = sBL;
 		dat[++pixp] = sBL;
 		dat[++pixp] = sBL;
 		dat[++pixp] = 255;

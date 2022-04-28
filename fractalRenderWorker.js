@@ -1,12 +1,17 @@
 var idat;
 
 function mongle(previous){
-	return ((2148135791*(previous) + 0xB8D29D9A)%0xFFFFFFFF);
+	// we cannot return home
+	// return ((2148135791*previous)&0xFFFFFFFF + 0xB8D29D9A)&0xFFFFFFFF;
+	return ((2148135791*previous)&0x7FFFFFFF + 0xB8D29D9A)&0x7FFFFFFF;
 }
+// invexp32 = 1/0xFFFFFFFF;
+//the home that we cannot return to: the seeds never used to go negative.
+// function mongleRange(previous){return mongle(previous)*invexp32;}
+invexp32i = 1/0x7FFFFFFF;
+function mongleRange(previous){return mongle(previous)*invexp32i;}
 
-invexp32 = 1/0xFFFFFFFF;
-function mongleRange(previous){return mongle(previous)*invexp32;}
-
+//outputs:
 var shadeUL;
 var hashUL;
 var shadeUR;
@@ -15,6 +20,7 @@ var shadeBL;
 var hashBL;
 var shadeBR;
 var hashBR;
+//tunings:
 var mutagenUpper = 1;
 var mutagenLower = 0.3;
 var mutagenDiff = mutagenUpper - mutagenLower;
@@ -103,7 +109,8 @@ function fractalRecurse(x,y,shade,hash, elevation){ //relies on idat
 var descendDeeplyFromOutShade;
 var descendDeeplyFromOutHash;
 function descendDeeplyFrom(shade, hash, address){
-	var s = shade, h = hash;
+	var s = shade;
+	var h = hash;
 	for(var i=0; i<address.length; ++i){
 		descendFrom(s, h);
 		var curDir = address[i];
@@ -130,13 +137,9 @@ function descendDeeplyFrom(shade, hash, address){
 
 self.addEventListener('message', function(ev){
 
-var span = Math.pow(2,ev.data.magnitude);
-var shade = ev.data.shade;
-var hash = ev.data.hash;
 idat = ev.data.imgdat;
 fractalRecurse(0,0, ev.data.shade, ev.data.hash, ev.data.magnitude);
-if(self.postMessage !== undefined) self.postMessage(ev.data.imgdat);
-else self.postMessage(ev.data.imgdat);
+self.postMessage(ev.data.imgdat);
 return false;
 
 },false);
